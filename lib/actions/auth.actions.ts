@@ -121,3 +121,8 @@ export async function isAuthenticated() {
   
 //     cookieStore.delete("session");
 // }
+
+export async function signOut() {
+    const cookieStore = cookies()
+    cookieStore.delete('session')
+}
