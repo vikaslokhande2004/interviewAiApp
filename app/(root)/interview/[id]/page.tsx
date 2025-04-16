@@ -14,8 +14,6 @@ const page = async ({ params } : RouteParams) => {
 
     if(!interview) redirect('/')
 
-    
-    
   return (
     <>
         <div className='flex flex-row gap-4 justify-between'>
@@ -28,7 +26,7 @@ const page = async ({ params } : RouteParams) => {
             </div>
             <p className=' bg-dark-200 px-4 py-2 rounded-lg h-fit capitalize'>{interview.type}</p>
         </div>
-        <Agent userName={user?.name} userId={user?.id} interviewId={id} type="interviews" />
+        <Agent userName={user?.name} questions={interview.questions} userId={user?.id} interviewId={id} type="interviews" />
     </>
   )
 }
