@@ -18,7 +18,7 @@ const RootLayout = async ({ children }: { children: ReactNode }) => {
             <nav className='flex justify-between'>
                 <Link href="/" className='flex items-center gap-2'>
                 <Image src="/logo.svg" alt='Logo' height={32} width={36}/>
-                <h1 className='text-primary-100'>Propwis</h1>
+                <h1 className='text-primary-100'>TechnoTalk</h1>
                 </Link>
                 <div className='flex items-center gap-6'>
                     <h4 className=' capitalize'>{user?.name}</h4>
