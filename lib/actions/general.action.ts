@@ -6,42 +6,42 @@ import { google } from "@ai-sdk/google";
 import { generateObject } from "ai";
 
 export async function getInterviewById(userId: string): Promise<Interview | null> {
-    const interview = await db
-        .collection('interviews')
-        .where('userId', '==', userId)
-        .orderBy('createdAt', 'desc')
-        .get();
+  const interview = await db
+    .collection('interviews')
+    .where('userId', '==', userId)
+    .orderBy('createdAt', 'desc')
+    .get();
 
-    return interview.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data()
-    }))
+  return interview.docs.map((doc) => ({
+    id: doc.id,
+    ...doc.data()
+  }))
 }
 
 export async function getLatesInterviews(params: GetLatestInterviewsParams): Promise<Interview | null> {
-    const { userId, limit = 20 } = params;
+  const { userId, limit = 20 } = params;
 
-    const interview = await db
-        .collection('interviews')
-        .orderBy('createdAt', 'desc')
-        .where('finalized', '==', true)
-        .where('userId', '!=', userId)
-        .limit(limit)
-        .get();
+  const interview = await db
+    .collection('interviews')
+    .orderBy('createdAt', 'desc')
+    .where('finalized', '==', true)
+    .where('userId', '!=', userId)
+    .limit(limit)
+    .get();
 
-    return interview.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data()
-    }))
+  return interview.docs.map((doc) => ({
+    id: doc.id,
+    ...doc.data()
+  }))
 }
 
 export async function getInterviewId(Id: string): Promise<Interview | null> {
-    const interview = await db
-        .collection('interviews')
-        .doc(Id)
-        .get();
+  const interview = await db
+    .collection('interviews')
+    .doc(Id)
+    .get();
 
-    return interview.data() as Interview | null;
+  return interview.data() as Interview | null;
 }
 
 export async function createFeedback(params: CreateFeedbackParams) {
@@ -105,19 +105,19 @@ export async function createFeedback(params: CreateFeedbackParams) {
 }
 
 export async function getFeedbackByInterviewId(params: GetFeedbackByInterviewIdParams): Promise<Feedback | null> {
-    const { interviewId, userId } = params;
+  const { interviewId, userId } = params;
 
-    const querySnapshot = await db
-      .collection("feedback")
-      .where("interviewId", "==", interviewId)
-      .where("userId", "==", userId)
-      .limit(1)
-      .get();
-  
-    if (querySnapshot.empty) return null;
-  
-    const feedbackDoc = querySnapshot.docs[0];
-    return { id: feedbackDoc.id, ...feedbackDoc.data() } as Feedback;
+  const querySnapshot = await db
+    .collection("feedback")
+    .where("interviewId", "==", interviewId)
+    .where("userId", "==", userId)
+    .limit(1)
+    .get();
+
+  if (querySnapshot.empty) return null;
+
+  const feedbackDoc = querySnapshot.docs[0];
+  return { id: feedbackDoc.id, ...feedbackDoc.data() } as Feedback;
 }
 
 

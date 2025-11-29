@@ -5,8 +5,24 @@ import { cookies } from "next/headers"
 
 const ONE_WEEK = 60 * 60 * 24 * 7;
 
+export interface SignUpParams {
+    uid: string;
+    name?: string;
+    email?: string;
+    college?: string;
+    rollNumber?: string;
+    course?: string;
+    branch?: string;
+    year?: string;
+    semester?: string;
+    dob?: string;
+    gender?: string;
+    phone?: string;
+}
+
 export async function signUp(params: SignUpParams) {
-    const { uid, name, email } = params
+    // const { uid, name, email } = params
+    const { uid, name, email, college, rollNumber, course, branch, year, semester, dob, gender, phone } = params;
 
     try {
         const userRecord = await db.collection('users').doc(uid).get();
@@ -17,10 +33,25 @@ export async function signUp(params: SignUpParams) {
             }
         }
 
+        // await db.collection('users').doc(uid).set({
+        //     name, email
+        // })
+        const data = {
+            name: name,
+            email: email,
+            college: college,
+            rollNumber: rollNumber,
+            course: course,
+            branch: branch,
+            year: year,
+            semester: semester,
+            dob: dob,
+            gender: gender,
+            phone: phone
+        };
 
-        await db.collection('users').doc(uid).set({
-            name, email
-        })
+        console.log("Saving data:", data);
+        await db.collection('users').doc(uid).set(data);
 
         return {
             success: true,

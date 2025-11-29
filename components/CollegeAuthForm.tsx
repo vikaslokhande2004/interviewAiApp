@@ -2,7 +2,7 @@
 
 import { auth } from "@/firebase/client";
 import { zodResolver } from "@hookform/resolvers/zod"
-import { Controller, useForm } from "react-hook-form"
+import { Controller, useForm, useFieldArray } from "react-hook-form"
 import { z } from "zod"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -36,34 +36,45 @@ import {
 // };
 const authFormSchema = (type: FormType) => {
     return z.object({
-        name: type === "sign-up" ? z.string().min(3) : z.string().optional(),
-        email: z.string().email(),
-        password: z.string().min(3),
-        college: type === "sign-up" ? z.string().min(2) : z.string().optional(),
-        rollNumber: type === "sign-up" ? z.string().min(1) : z.string().optional(),
-        course: type === "sign-up" ? z.string().min(1) : z.string().optional(),
-        branch: type === "sign-up" ? z.string().min(1) : z.string().optional(),
-        year: type === "sign-up" ? z.string().min(1) : z.string().optional(),
-        semester: type === "sign-up" ? z.string().min(1) : z.string().optional(),
-        dob: type === "sign-up" ? z.string().min(1) : z.string().optional(),
-        gender: type === "sign-up" ? z.string().min(1) : z.string().optional(),
-        phone: type === "sign-up" ? z.string().min(10) : z.string().optional(),
+        name: z.string().min(1, "Name is required"),
+        email: z.string().email("Invalid email"),
+        password: z.string().min(6, "Password must be at least 6 characters"),
+        college: z.string().min(1, "College is required"),
+        rollNumber: z.string().optional(),
+        course: z.string().optional(),
+        branch: z.string().optional(),
+        year: z.string().optional(),
+        semester: z.string().optional(),
+        dob: z.string().optional(),
+        gender: z.string().optional(),
+        phone: z.string().optional(),
+        // ✅ New fields
+        collegeCode: z.string().optional(),
+        affiliation: z.string().optional(),
+        address: z.string().optional(),
+        city: z.string().optional(),
+        state: z.string().optional(),
+        pinCode: z.string().optional(),
+        contactEmail: z.string().email("Invalid email").optional(),
+        contactPhone: z.string().optional(),
+        departments: z.array(
+            z.object({
+                name: z.string().min(1, "Department name is required"),
+            })
+        ),
+        courses: z.array(
+            z.object({
+                name: z.string().min(1, "Course name is required"),
+            })
+        ),
     });
 };
 
-const AuthForm = ({ type }: { type: FormType }) => {
+const CollegeAuthForm = ({ type }: { type: FormType }) => {
 
     const router = useRouter()
     const formSchema = authFormSchema(type);
 
-    // const form = useForm<z.infer<typeof formSchema>>({
-    //     resolver: zodResolver(formSchema),
-    //     defaultValues: {
-    //         name: "",
-    //         email: "",
-    //         password: "",
-    //     },
-    // })
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -71,16 +82,29 @@ const AuthForm = ({ type }: { type: FormType }) => {
             email: "",
             password: "",
             college: "",
-            rollNumber: "",
             course: "",
-            branch: "",
-            year: "",
-            semester: "",
-            dob: "",
-            gender: "",
             phone: "",
+            collegeCode: "",
+            affiliation: "",
+            address: "",
+            city: "",
+            state: "",
+            pinCode: "",
+            departments: [{ name: "" }], // start with one empty department
+            courses: [{ name: "" }], // start with one empty course
         },
     });
+    const { fields: deptFields, append: addDept, remove: removeDept } =
+        useFieldArray({
+            control: form.control,
+            name: "departments",
+        });
+
+    const { fields: courseFields, append: addCourse, remove: removeCourse } =
+        useFieldArray({
+            control: form.control,
+            name: "courses",
+        });
 
     // 2. Define a submit handler.
     async function onSubmit(values: z.infer<typeof formSchema>) {
@@ -100,14 +124,14 @@ const AuthForm = ({ type }: { type: FormType }) => {
                     name: name!,
                     email,
                     password,
-                    college, 
-                    rollNumber, 
-                    course, 
-                    branch, 
-                    year, 
-                    semester, 
-                    dob, 
-                    gender, 
+                    college,
+                    rollNumber,
+                    course,
+                    branch,
+                    year,
+                    semester,
+                    dob,
+                    gender,
                     phone
                 })
                 if (!result?.success) {
@@ -137,6 +161,67 @@ const AuthForm = ({ type }: { type: FormType }) => {
             toast.error(`There was an error: ${error}`)
         }
     }
+    const states = [
+        "Andhra Pradesh",
+        "Arunachal Pradesh",
+        "Assam",
+        "Bihar",
+        "Chhattisgarh",
+        "Goa",
+        "Gujarat",
+        "Haryana",
+        "Himachal Pradesh",
+        "Jharkhand",
+        "Karnataka",
+        "Kerala",
+        "Madhya Pradesh",
+        "Maharashtra",
+        "Manipur",
+        "Meghalaya",
+        "Mizoram",
+        "Nagaland",
+        "Odisha",
+        "Punjab",
+        "Rajasthan",
+        "Sikkim",
+        "Tamil Nadu",
+        "Telangana",
+        "Tripura",
+        "Uttar Pradesh",
+        "Uttarakhand",
+        "West Bengal"
+    ];
+    const colleges = [
+        "Hi-Tech Institute of Technology, Aurangabad",
+        "Government College of Engineering, Aurangabad",
+        "Maharashtra Institute of Technology (MIT), Aurangabad",
+        "Chhatrapati Shahu College of Engineering, Aurangabad",
+        "Deogiri Institute of Engineering & Management Studies, Aurangabad",
+        "P.E.S. College of Engineering, Aurangabad",
+        "Shreeyash College of Engineering and Technology, Aurangabad",
+        "Aurangabad College of Engineering, Aurangabad",
+        "Dr. Babasaheb Ambedkar Marathwada University (BAMU), Aurangabad",
+        "Indian Institute of Technology, Bombay",
+        "Veermata Jijabai Technological Institute (VJTI), Mumbai",
+        "College of Engineering, Pune",
+        "MIT World Peace University (MIT-WPU), Pune",
+        "Vishwakarma Institute of Technology (VIT), Pune",
+        "Pune Institute of Computer Technology (PICT), Pune",
+        "Army Institute of Technology (AIT), Pune",
+        "Jawaharlal Nehru Engineering College (JNEC), Aurangabad",
+        "G.S. Mandal's Maharashtra Institute of Technology (MIT), Aurangabad",
+        "Dwarkadas J. Sanghvi College of Engineering, Mumbai",
+        "Sardar Patel Institute of Technology, Mumbai",
+        "K. J. Somaiya College of Engineering, Mumbai",
+    ];
+    const affiliations = [
+        "Dr. Babasaheb Ambedkar Technological University",
+        "Savitribai Phule Pune University",
+        "Shivaji University",
+        "SPPU Autonomous",
+        "Mumbai University",
+        "Other",
+    ];
 
     const isSignIn = type === 'sign-in';
 
@@ -153,14 +238,7 @@ const AuthForm = ({ type }: { type: FormType }) => {
 
                         {!isSignIn && (
                             <>
-                                <FormField
-                                    control={form.control}
-                                    name="name"
-                                    label="Name"
-                                    placeholder="Your Name"
-                                    type="text"
-                                />
-                                 <Controller
+                                <Controller
                                     control={form.control}
                                     name="college"
                                     render={({ field }) => (
@@ -169,10 +247,67 @@ const AuthForm = ({ type }: { type: FormType }) => {
                                             value={field.value}            // controlled value
                                         >
                                             <SelectTrigger className="input w-full">
-                                                <SelectValue placeholder="Your college" />
+                                                <SelectValue placeholder="Select your college" />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                <SelectItem value="Hi-Tech Institute of Technology, Aurangabad">Hi-Tech Institute of Technology, Aurangabad</SelectItem>
+                                                {colleges.map((collegeName) => (
+                                                    <SelectItem key={collegeName} value={collegeName}>
+                                                        {collegeName}
+                                                    </SelectItem>
+                                                ))}
+
+                                            </SelectContent>
+                                        </Select>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="collegecode"
+                                    label="Phone"
+                                    placeholder="Your College Code"
+                                    type="text"
+                                />
+
+
+                                <Controller
+                                    control={form.control}
+                                    name="affiliation"
+                                    render={({ field }) => (
+                                        <Select
+                                            onValueChange={field.onChange} // tell RHF to update value
+                                            value={field.value}            // controlled value
+                                        >
+                                            <SelectTrigger className="input w-full">
+                                                <SelectValue placeholder="Affiliation / University" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {affiliations.map((aff) => (
+                                                    <SelectItem key={aff} value={aff}>
+                                                        {aff}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    )}
+                                />
+
+                                <Controller
+                                    control={form.control}
+                                    name="state"
+                                    render={({ field }) => (
+                                        <Select
+                                            onValueChange={field.onChange} // tell RHF to update value
+                                            value={field.value}            // controlled value
+                                        >
+                                            <SelectTrigger className="input w-full">
+                                                <SelectValue placeholder="State" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {states.map((state) => (
+                                                    <SelectItem key={state} value={state}>
+                                                        {state}
+                                                    </SelectItem>
+                                                ))}
                                             </SelectContent>
                                         </Select>
                                     )}
@@ -180,9 +315,23 @@ const AuthForm = ({ type }: { type: FormType }) => {
 
                                 <FormField
                                     control={form.control}
-                                    name="rollNumber"
-                                    label="Roll Number"
-                                    placeholder="Your Roll number"
+                                    name="address"
+                                    label="Phone"
+                                    placeholder="Your College Address"
+                                    type="text"
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="city"
+                                    label="Phone"
+                                    placeholder="Your College City"
+                                    type="text"
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="pincode"
+                                    label="Phone"
+                                    placeholder="City PinCode"
                                     type="text"
                                 />
                                 <Controller
@@ -202,95 +351,31 @@ const AuthForm = ({ type }: { type: FormType }) => {
                                         </Select>
                                     )}
                                 />
-                                <Controller
-                                    control={form.control}
-                                    name="branch"
-                                    render={({ field }) => (
-                                        <Select
-                                            onValueChange={field.onChange} // tell RHF to update value
-                                            value={field.value}            // controlled value
+
+                                {deptFields.map((field, index) => (
+                                    <div key={field.id}>
+                                        <FormField
+                                            control={form.control}
+                                            name={`departments.${index}.name`}
+                                            label={`Department ${index + 1}`}
+                                            placeholder="Enter department name"
+                                            type="text"
+                                        />
+                                        <Button
+                                            className="mt-4"
+                                            type="button"
+                                            variant="destructive"
+                                            onClick={() => removeDept(index)}
                                         >
-                                            <SelectTrigger className="input w-full">
-                                                <SelectValue placeholder="Branch" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="CSE">CSE</SelectItem>
-                                                <SelectItem value="CSE (AI AND ML)">CSE (AI AND ML)</SelectItem>
-                                                <SelectItem value="IT">IT</SelectItem>
-                                                <SelectItem value="AI AND DS">AI AND DS</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                    )}
-                                />
-                                <Controller
-                                    control={form.control}
-                                    name="year"
-                                    render={({ field }) => (
-                                        <Select
-                                            onValueChange={field.onChange} // tell RHF to update value
-                                            value={field.value}            // controlled value
-                                        >
-                                            <SelectTrigger className="input w-full">
-                                                <SelectValue placeholder="Your Year" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="First">First Year</SelectItem>
-                                                <SelectItem value="Second">Second Year</SelectItem>
-                                                <SelectItem value="Third">Third Year</SelectItem>
-                                                <SelectItem value="Fourth">Fourth Year</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                    )}
-                                />
-                                <Controller
-                                    control={form.control}
-                                    name="semester"
-                                    render={({ field }) => (
-                                        <Select
-                                            onValueChange={field.onChange} // tell RHF to update value
-                                            value={field.value}            // controlled value
-                                        >
-                                            <SelectTrigger className="input w-full">
-                                                <SelectValue placeholder="Semester" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="1">1 Semester</SelectItem>
-                                                <SelectItem value="2">2 Semester</SelectItem>
-                                                <SelectItem value="3">3 Semester</SelectItem>
-                                                <SelectItem value="4">4 Semester</SelectItem>
-                                                <SelectItem value="5">5 Semester</SelectItem>
-                                                <SelectItem value="6">6 Semester</SelectItem>
-                                                <SelectItem value="7">7 Semester</SelectItem>
-                                                <SelectItem value="8">8 Semester</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                    )}
-                                />
-                                <FormField
-                                    control={form.control}
-                                    name="dob"
-                                    label="Date of Birth"
-                                    placeholder="Your Date of Birth"
-                                    type="date"
-                                />
-                                <Controller
-                                    control={form.control}
-                                    name="gender"
-                                    render={({ field }) => (
-                                        <Select
-                                            onValueChange={field.onChange} // tell RHF to update value
-                                            value={field.value}            // controlled value
-                                        >
-                                            <SelectTrigger className="input w-full">
-                                                <SelectValue placeholder="Gender" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="male">Male</SelectItem>
-                                                <SelectItem value="female">Female</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                    )}
-                                />
+                                            Remove
+                                        </Button>
+                                    </div>
+                                ))}
+                                <Button type="button" variant="secondary" className="bg-[#27282F]" onClick={() => addDept({ name: "" })}>
+                                    + Add Department
+                                </Button>
+
+
                                 <FormField
                                     control={form.control}
                                     name="phone"
@@ -304,7 +389,7 @@ const AuthForm = ({ type }: { type: FormType }) => {
                         <FormField
                             control={form.control}
                             name="email"
-                            label="Email"
+                            label="Phone"
                             placeholder="Your email address"
                             type="email"
                         />
@@ -312,12 +397,10 @@ const AuthForm = ({ type }: { type: FormType }) => {
                         <FormField
                             control={form.control}
                             name="password"
-                            label="Password"
+                            label="Phone"
                             placeholder="Enter your password"
                             type="password"
                         />
-
-
 
                         <Button className="btn" type="submit">{isSignIn ? 'Sign in' : 'Create an Accout'}</Button>
                     </form>
@@ -336,4 +419,4 @@ const AuthForm = ({ type }: { type: FormType }) => {
     )
 }
 
-export default AuthForm
+export default CollegeAuthForm

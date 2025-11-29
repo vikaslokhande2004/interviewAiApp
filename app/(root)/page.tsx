@@ -1,11 +1,9 @@
 import InterviewCard from '@/components/InterviewCard'
 import { Button } from '@/components/ui/button'
-import { dummyInterviews } from '@/constants'
 import { getCurrentUser } from '@/lib/actions/auth.actions'
 import { getInterviewById, getLatesInterviews } from '@/lib/actions/general.action'
 import Image from 'next/image'
 import Link from 'next/link'
-import React from 'react'
 
 const page = async () => {
     const user = await getCurrentUser();
@@ -14,13 +12,13 @@ const page = async () => {
       await getInterviewById(user?.id!),
       await getLatesInterviews({userId: user?.id!})
     ])
-
     // const userInterviews = await getInterviewById(user?.id!)
     // const latesInterviews = await getLatesInterviews({userId: user?.id!})
 
     const hasPastInterviews = userInterviews?.length > 0;
     const hasUpcomingInterviews = latesInterviews?.length > 0;
 
+    // const [InterviewGeneration, setInterviewGeneration] = useState(true)
 
 
   return (
@@ -32,8 +30,10 @@ const page = async () => {
             Practice real interview questions & get instant feedback
           </p>
 
+  
           <Button asChild className="btn-primary max-sm:w-full">
-            <Link href="/interview">Start an Interview</Link>
+              <Link href={`/interview/${user?.id}/InterviewGeneration`}>Start an Interview</Link>
+            {/* <Link href="/interview">Start an Interview</Link> */}
           </Button>
         </div>
 
@@ -56,8 +56,6 @@ const page = async () => {
             ))) : (
             <p>You haven&apos;t taken any interviews yet</p> 
         )}
-
-
         </div>
       </section>
       <section className='flex flex-col gap-6 mt-8'>

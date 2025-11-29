@@ -144,6 +144,8 @@ const Agent = ({
   return (
     <>
       <div className="call-view">
+
+        
         {/* AI Interviewer Card */}
         <div className="card-interviewer">
           <div className="avatar">

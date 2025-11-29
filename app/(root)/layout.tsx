@@ -4,6 +4,8 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import React, { ReactNode } from 'react'
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Button } from '@/components/ui/button'
 
 const RootLayout = async ({ children }: { children: ReactNode }) => {
 
@@ -11,23 +13,29 @@ const RootLayout = async ({ children }: { children: ReactNode }) => {
     const user = await getCurrentUser()
 
 
-    if(!isUserAuthenticated) redirect('/sign-in')
+    if (!isUserAuthenticated) redirect('/sign-in')
 
     return (
         <div className='root-layout'>
             <nav className='flex justify-between'>
                 <Link href="/" className='flex items-center gap-2'>
-                <Image src="/logo.svg" alt='Logo' height={32} width={36}/>
-                <h1 className='text-primary-100'>TechnoTalk</h1>
+                    <Image src="/logo.svg" alt='Logo' height={32} width={36} />
+                    <h1 className='text-primary-100'>TechnoTalk</h1>
                 </Link>
                 <div className='flex items-center gap-6'>
+                    <Link href={"/college"}><Button className='bg-[#C0BBF1] hover:bg-[#A9A5D2]'>College</Button></Link>
+                    <Link href={"/student/profile"}>
+                        <Avatar>
+                            <AvatarFallback>{user?.name[0].toUpperCase()}</AvatarFallback>
+                        </Avatar>
+                    </Link>
                     <h4 className=' capitalize'>{user?.name}</h4>
-                    <LogoutButton/>
+                    <LogoutButton />
                 </div>
             </nav>
             {children}
         </div>
     )
 }
- 
+
 export default RootLayout
